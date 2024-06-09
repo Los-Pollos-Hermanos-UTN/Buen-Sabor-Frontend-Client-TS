@@ -10,10 +10,17 @@ import { Action, State } from "../types/Carrito";
 const initialState: State = {
 	cart: [],
 	user: null,
+	selectedSucursal: null,
 };
 
 const reducer = (state: State, action: Action): State => {
 	switch (action.type) {
+		case "SET_SELECTED_SUCURSAL":
+			return {
+				...state,
+				selectedSucursal: action.payload,
+				cart: [],
+			};
 		case "ADD_TO_CART":
 			const item = state.cart.find(
 				(cartItem) => cartItem.id === action.payload.id

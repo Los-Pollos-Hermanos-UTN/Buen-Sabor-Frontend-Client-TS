@@ -90,7 +90,7 @@ const Navbar = () => {
 											</div>
 										))
 									) : (
-										<p className="text-center">Your cart is empty</p>
+										<p className="text-center">Tu carrito está vacío.</p>
 									)}
 								</ScrollArea>
 							</div>

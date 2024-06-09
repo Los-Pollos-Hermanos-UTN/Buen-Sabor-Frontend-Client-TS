@@ -9,7 +9,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { GlobalProvider } from "./context/GlobalContext";
 import Carrito from "./screens/Carrito";
 import Menu from "./screens/Menu";
-import Hero from "./components/Hero/Hero";
+import Hero from "./screens/Hero";
 
 const App: React.FC = () => {
 	React.useEffect(() => {

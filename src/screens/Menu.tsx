@@ -1,21 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { FaShoppingCart } from "react-icons/fa";
 import { useGlobalContext } from "../context/GlobalContext";
 import { Articulo } from "../types/Articulo";
 import { Categoria } from "../types/Categoria";
 import { Sucursal } from "../types/Sucursal";
 import { ListIcon, ChevronDownIcon } from "lucide-react";
 import { Button } from "../components/ui/Button";
-import { Card, CardContent } from "../components/ui/Card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../components/ui/DropdownMenu";
-import { Badge } from "../components/ui/Badge";
-
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "../components/ui/DropdownMenu";
+import DropdownItems from "../components/Menu/DropdownItems";
+import ArticulosSection from "../components/Menu/ArticulosSection";
 
 // TODO: types
 const Menu: React.FC = () => {
 	const { state, dispatch } = useGlobalContext();
+	const { selectedSucursal } = state;
+
 	const [sucursales, setSucursales] = useState<Sucursal[]>([]);
-	const [selectedSucursal, setSelectedSucursal] = useState<number | null>(null);
 	const [categorias, setCategorias] = useState<Categoria[]>([]);
 	const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +52,8 @@ const Menu: React.FC = () => {
 			const response = await fetch(
 				`http://localhost:8080/categoria/listBySucursal/${sucursalId}`
 			);
-			const data = await response.json();
+			let data = await response.json();
+			data = filterEmptyCategorias(data);
 			setCategorias(data);
 			setIsLoading(false);
 		} catch (error) {
@@ -57,8 +62,28 @@ const Menu: React.FC = () => {
 		}
 	};
 
+	const filterEmptyCategorias = (categorias: Categoria[]) => {
+		return categorias.filter((categoria) => {
+			const validArticulos = categoria.articulos.filter(
+				(articulo) => !articulo.eliminado && articulo.precioVenta > 0
+			);
+			if (validArticulos.length > 0) {
+				return true;
+			} else if (
+				categoria.subCategorias &&
+				categoria.subCategorias.length > 0
+			) {
+				categoria.subCategorias = filterEmptyCategorias(
+					categoria.subCategorias
+				);
+				return categoria.subCategorias.length > 0;
+			}
+			return false;
+		});
+	};
+
 	const handleSucursalChange = (sucursalId: number) => {
-		setSelectedSucursal(sucursalId);
+		dispatch({ type: "SET_SELECTED_SUCURSAL", payload: sucursalId });
 		setSelectedCategory(null);
 	};
 
@@ -81,72 +106,40 @@ const Menu: React.FC = () => {
 		categoryId: number | null
 	): Articulo[] => {
 		const allCategorias = flattenCategorias(categorias);
-		if (categoryId) {
-			const selectedCategorias = allCategorias.filter(
-				(categoria) =>
-					categoria.id === categoryId || categoria.padreId === categoryId
+		let selectedCategorias = [];
+
+		if (categoryId !== null) {
+			const getAllSubcategories = (categoriaId: number | null) => {
+				const subCategorias = allCategorias.filter(
+					(categoria) => categoria.padreId === categoriaId
+				);
+				subCategorias.forEach((subCategoria) => {
+					selectedCategorias.push(subCategoria);
+					getAllSubcategories(subCategoria.id);
+				});
+			};
+
+			const mainCategory = allCategorias.find(
+				(categoria) => categoria.id === categoryId
 			);
-			return selectedCategorias.flatMap((categoria) =>
-				categoria.articulos
-					.filter((articulo) => !articulo.eliminado && articulo.precioVenta > 0)
-					.map((articulo) => ({
-						...articulo,
-						categoriaDenominacion: categoria.denominacion,
-					}))
-			);
+			if (mainCategory) {
+				selectedCategorias.push(mainCategory);
+				getAllSubcategories(mainCategory.id);
+			}
 		} else {
-			return allCategorias.flatMap((categoria) =>
-				categoria.articulos
-					.filter((articulo) => !articulo.eliminado && articulo.precioVenta > 0)
-					.map((articulo) => ({
-						...articulo,
-						categoriaDenominacion: categoria.denominacion,
-					}))
-			);
+			selectedCategorias = allCategorias;
 		}
+		return selectedCategorias.flatMap((categoria) =>
+			categoria.articulos
+				.filter((articulo) => !articulo.eliminado && articulo.precioVenta > 0)
+				.map((articulo) => ({
+					...articulo,
+					categoriaDenominacion: categoria.denominacion,
+				}))
+		);
 	};
 
-	const renderArticulos = (articulos: Articulo[]) => {
-		return articulos.map((articulo) => (
-			<Card className="w-full" key={articulo.id}>
-				<div className="relative">
-					<Badge
-						variant="secondary"
-						className="absolute top left rounded-md rounded-bl-none rounded-tr-none hover:bg-slate-100"
-					>
-						{articulo.categoriaDenominacion.toUpperCase()}
-					</Badge>
-					{articulo.imagenes[0]?.url && (
-						<img
-							src={articulo.imagenes[0].url}
-							alt={articulo.denominacion}
-							className="w-full h-48 object-cover rounded-t-lg"
-						/>
-					)}
-				</div>
-				<CardContent className="space-y-2 p-4 text-center relative">
-					<div className="flex">
-						<h3 className="text-lg font-bold">{articulo.denominacion}</h3>
-					</div>
-
-					<div className="flex space-x-2">
-						<p className="text-lg font-bold">${articulo.precioVenta}</p>
-					</div>
-					<div className="absolute bottom-4 right-4">
-						<button
-							className="text-primary hover:text-secondary"
-							onClick={() =>
-								dispatch({ type: "ADD_TO_CART", payload: articulo })
-							}
-						>
-							<FaShoppingCart className="w-5 h-5" />
-						</button>
-					</div>
-				</CardContent>
-			</Card>
-		));
-	};
-
+	// TODO: fix type
 	const categoriasPrincipales = [
 		{ id: null, denominacion: "Todo" },
 		...categorias.filter(
@@ -200,32 +193,12 @@ const Menu: React.FC = () => {
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start" className="w-full md:w-auto">
-						{categoriasPrincipales.map((categoria) => (
-							<React.Fragment key={categoria.id}>
-								<DropdownMenuItem
-									className={`flex items-center space-x-1 w-full md:w-auto ${
-										selectedCategory === categoria.id ? "bg-gray-200" : ""
-									}`}
-									onClick={() => handleCategoryClick(categoria.id)}
-								>
-									<ListIcon className="w-5 h-5" />
-									<span>{categoria.denominacion}</span>
-								</DropdownMenuItem>
-								{categoria.subCategorias &&
-									categoria.subCategorias.map((sub) => (
-										<DropdownMenuItem
-											key={sub.id}
-											className={`flex items-center space-x-1 w-full md:w-auto ml-4 ${
-												selectedCategory === sub.id ? "bg-gray-200" : ""
-											}`}
-											onClick={() => handleCategoryClick(sub.id)}
-										>
-											<ListIcon className="w-5 h-5" />
-											<span>{sub.denominacion}</span>
-										</DropdownMenuItem>
-									))}
-							</React.Fragment>
-						))}
+						{/* TODO: fix type */}
+						<DropdownItems
+							categorias={categoriasPrincipales as Categoria[]}
+							handleCategoryClick={handleCategoryClick}
+							selectedCategory={selectedCategory}
+						/>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</div>
@@ -233,7 +206,7 @@ const Menu: React.FC = () => {
 				<div>Loading...</div>
 			) : (
 				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-					{renderArticulos(articulos)}
+					<ArticulosSection articulos={articulos} dispatch={dispatch} />
 				</div>
 			)}
 		</div>

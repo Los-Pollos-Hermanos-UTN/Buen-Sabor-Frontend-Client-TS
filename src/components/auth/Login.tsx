@@ -5,11 +5,13 @@ import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 import { Label } from "../ui/Label";
+import { toast } from "react-toastify";
 
 interface FormData {
 	name: string;
 	email: string;
 	password: string;
+	lastname: string;
 	confirmPassword: string;
 	image: File | null;
 }
@@ -19,6 +21,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 	const [isRegistering, setIsRegistering] = useState(false);
 	const [formData, setFormData] = useState<FormData>({
 		name: "",
+		lastname: "",
 		email: "",
 		password: "",
 		confirmPassword: "",
@@ -31,15 +34,6 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 			...prevState,
 			[id]: value,
 		}));
-	};
-
-	const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-		if (e.target.files) {
-			setFormData((prevState) => ({
-				...prevState,
-				image: e.target.files![0],
-			}));
-		}
 	};
 
 	const handleRegister = async () => {
@@ -72,7 +66,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 				id: 0,
 				eliminado: false,
 				nombre: formData.name,
-				apellido: "",
+				apellido: formData.lastname,
 				telefono: "",
 				email: formData.email,
 				fechaNac: new Date().toISOString().split("T")[0],
@@ -94,7 +88,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 			});
 
 			if (!clientResponse.ok) {
-				throw new Error("Error creating client");
+				toast.error("Hubo un error registrando el cliente");
 			}
 
 			login({ id: user.id, nombreUsuario: formData.email, rol: "user" });
@@ -132,6 +126,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 		setIsRegistering((prevState) => !prevState);
 		setFormData({
 			name: "",
+			lastname: "",
 			email: "",
 			password: "",
 			confirmPassword: "",
@@ -151,10 +146,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 				<div className="space-y-4">
 					{isLoggedIn ? (
 						<>
-							<h2 className="text-2xl font-bold">Welcome, {username}</h2>
-							<div className="flex items-center space-x-2">
-								<p>{username}</p>
-							</div>
+							<h2 className="text-2xl font-bold">Bienvenido, {username}</h2>
 							<Button
 								className="bg-primary hover:bg-secondary duration-200 text-white w-full"
 								onClick={logout}
@@ -166,14 +158,26 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 						<>
 							<h2 className="text-2xl font-bold">Register</h2>
 							<div className="space-y-2">
-								<Label htmlFor="name">Name</Label>
+								<Label htmlFor="name">Nombre</Label>
 								<Input
 									id="name"
 									type="text"
-									placeholder="Enter your name"
+									placeholder="Ingresa tu nombre"
 									className="w-full"
 									autoComplete="off"
 									value={formData.name}
+									onChange={handleInputChange}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="lastname">Apellido</Label>
+								<Input
+									id="lastname"
+									type="text"
+									placeholder="Ingresa tu apellido"
+									className="w-full"
+									autoComplete="off"
+									value={formData.lastname}
 									onChange={handleInputChange}
 								/>
 							</div>
@@ -182,7 +186,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 								<Input
 									id="email"
 									type="email"
-									placeholder="Enter your email"
+									placeholder="Ingresa tu email"
 									className="w-full"
 									autoComplete="off"
 									value={formData.email}
@@ -190,11 +194,11 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="password">Password</Label>
+								<Label htmlFor="password">Contraseña</Label>
 								<Input
 									id="password"
 									type="password"
-									placeholder="Enter your password"
+									placeholder="Ingresa tu contraseña"
 									className="w-full"
 									autoComplete="off"
 									value={formData.password}
@@ -202,40 +206,31 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="confirmPassword">Confirm Password</Label>
+								<Label htmlFor="confirmPassword">Repetir Contraseña</Label>
 								<Input
 									id="confirmPassword"
 									type="password"
-									placeholder="Confirm your password"
+									placeholder="Repite tu contraseña"
 									className="w-full"
 									autoComplete="off"
 									value={formData.confirmPassword}
 									onChange={handleInputChange}
 								/>
 							</div>
-							<div className="space-y-2">
-								<Label htmlFor="image">Image</Label>
-								<Input
-									id="image"
-									type="file"
-									className="w-full"
-									onChange={handleImageChange}
-								/>
-							</div>
 							<Button
 								className="bg-primary hover:bg-secondary duration-200 text-white w-full"
 								onClick={handleRegister}
 							>
-								Register
+								Registrarse
 							</Button>
 							<p className="text-center text-sm text-gray-500">
-								Already have an account?{" "}
+								Ya tienes una cuenta?{" "}
 								<button
 									type="button"
 									className="font-medium underline"
 									onClick={toggleRegistering}
 								>
-									Login
+									Iniciar Sesión
 								</button>
 							</p>
 						</>

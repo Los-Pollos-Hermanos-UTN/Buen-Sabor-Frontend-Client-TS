@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import Vector from "../../assets/vector3.png";
-import Banner from "../Banner/Banner";
-import { Button } from "../ui/Button";
-import PromotionsSection from "../Promotions/PromotionsSection";
+import Vector from "../assets/vector3.png";
+import { Button } from "../components/ui/Button";
+import PromotionsSection from "../components/Promotions/PromotionsSection";
+import Banner from "../components/Banner/Banner";
 
 const Hero = () => {
 	return (
