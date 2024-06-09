@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import Vector from "../../assets/vector3.png";
 import Banner from "../Banner/Banner";
-import Testimonial from "../Testimonial/Testimonial";
 import { Button } from "../ui/Button";
 import PromotionsSection from "../Promotions/PromotionsSection";
 
