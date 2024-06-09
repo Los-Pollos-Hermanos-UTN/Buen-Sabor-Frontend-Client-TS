@@ -4,12 +4,14 @@ import { useGlobalContext } from "../context/GlobalContext";
 import { Articulo } from "../types/Articulo";
 import { Categoria } from "../types/Categoria";
 import { Sucursal } from "../types/Sucursal";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
-import { Badge, ListIcon, ChevronDownIcon } from "lucide-react";
+import { ListIcon, ChevronDownIcon } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../components/ui/DropdownMenu";
+import { Badge } from "../components/ui/Badge";
 
 
+// TODO: types
 const Menu: React.FC = () => {
 	const { state, dispatch } = useGlobalContext();
 	const [sucursales, setSucursales] = useState<Sucursal[]>([]);

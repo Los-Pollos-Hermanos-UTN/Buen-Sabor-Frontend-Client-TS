@@ -2,15 +2,11 @@ import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import { useGlobalContext } from "../../context/GlobalContext";
 import Logo from "../../assets/food-logo.png";
-import {
-	Popover,
-	PopoverTrigger,
-	PopoverContent,
-} from "@radix-ui/react-popover";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
-import { Badge } from "lucide-react";
 import Login from "../auth/Login";
 import { Button } from "../ui/Button";
+import { Badge } from "../ui/Badge";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 
 const Navbar = () => {
 	const { state, dispatch } = useGlobalContext();
@@ -19,7 +15,7 @@ const Navbar = () => {
 	const totalCartPrice = cartItems
 		.reduce((total, item) => total + item.precioVenta * item.quantity, 0)
 		.toFixed(2);
-	const popoverRef = useRef<HTMLDivElement>(null);
+	const popoverRef = useRef<any>(null);
 
 	const closePopover = () => {
 		if (popoverRef.current) {
@@ -27,9 +23,10 @@ const Navbar = () => {
 		}
 	};
 
+	// TODO: ref
 	return (
 		<header className="bg-white shadow-md duration-200">
-			<nav className="flex justify-between items-center px-4 py-2 container mx-auto">
+			<nav className="flex justify-between items-center px-4 py-2 mt-2">
 				<div className="flex items-center">
 					<Link
 						to="/"
@@ -45,15 +42,13 @@ const Navbar = () => {
 						<span className="flex flex-col justify-center">Buen Sabor</span>
 					</Link>
 				</div>
-				<div className="flex items-center space-x-4 relative">
+				<div className="flex items-center space-x-4 relative mr-52">
 					<Login />
 					<Popover ref={popoverRef}>
 						<PopoverTrigger asChild>
 							<Button variant="outline" className="relative">
 								<ShoppingCartIcon className="w-5 h-5" />
-								<Badge
-									className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2"
-								>
+								<Badge className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2">
 									{cartQuantity}
 								</Badge>
 							</Button>

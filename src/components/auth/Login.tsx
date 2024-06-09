@@ -1,14 +1,10 @@
 import { useState, ChangeEvent, forwardRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { UserIcon } from "lucide-react";
-import { Label } from "@radix-ui/react-dropdown-menu";
-import {
-	Popover,
-	PopoverTrigger,
-	PopoverContent,
-} from "@radix-ui/react-popover";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
+import { Label } from "../ui/Label";
 
 interface FormData {
 	name: string;
@@ -41,7 +37,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 		if (e.target.files) {
 			setFormData((prevState) => ({
 				...prevState,
-				image: e.target.files[0],
+				image: e.target.files![0],
 			}));
 		}
 	};
@@ -143,6 +139,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 		});
 	};
 
+	// TODO: ref
 	return (
 		<Popover ref={popoverRef}>
 			<PopoverTrigger asChild>
