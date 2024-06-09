@@ -47,7 +47,6 @@ const Hero = () => {
 			</div>
 			<PromotionsSection />
 			<Banner />
-			<Testimonial />
 		</>
 	);
 };
