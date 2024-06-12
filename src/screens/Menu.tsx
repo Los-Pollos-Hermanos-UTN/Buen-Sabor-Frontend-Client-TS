@@ -20,7 +20,7 @@ const Menu: React.FC = () => {
 
 	const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 	const [categorias, setCategorias] = useState<Categoria[]>([]);
-	const [promociones, setPromociones] = useState<Articulo[]>([]);
+	const [promociones, setPromociones] = useState<any[]>([]);
 	const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isPromociones, setIsPromociones] = useState(false);
@@ -150,8 +150,7 @@ const Menu: React.FC = () => {
 		} else {
 			selectedCategorias = allCategorias;
 		}
-
-		const articulos = selectedCategorias.flatMap((categoria) =>
+		return selectedCategorias.flatMap((categoria) =>
 			categoria.articulos
 				.filter((articulo) => !articulo.eliminado && articulo.precioVenta > 0)
 				.map((articulo) => ({
@@ -159,19 +158,10 @@ const Menu: React.FC = () => {
 					categoriaDenominacion: categoria.denominacion,
 				}))
 		);
-
-		if (categoryId === null) {
-			return [...promociones, ...articulos];
-		}
-
-		return articulos;
 	};
 
 	const categoriasPrincipales = [
-		...(categorias.some((categoria) => categoria.articulos.length > 0 || categoria.subCategorias.length > 0)
-			? [{ id: null, denominacion: "Todo" }]
-			: []),
-		...(promociones.length > 0 ? [{ id: -1, denominacion: "Promociones" }] : []),
+		{ id: null, denominacion: "Todo" },
 		...categorias.filter(
 			(categoria) =>
 				!categoria.padreId &&
@@ -180,82 +170,97 @@ const Menu: React.FC = () => {
 		),
 	];
 
-	const articulos = isPromociones
-		? promociones
-		: getArticulos(categorias, selectedCategory);
+	const articulos = isPromociones ? [] : getArticulos(categorias, selectedCategory);
 
 	return (
 		<div className="bg-white p-6 md:p-8 lg:p-10">
 			<div className="flex flex-col md:flex-row justify-between items-center mb-6">
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button
-							variant="secondary"
-							className="flex items-center space-x-1 w-full md:w-auto"
-						>
-							<ListIcon className="w-5 h-5" />
-							<span>Sucursales</span>
-							<ChevronDownIcon className="w-4 h-4" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="start" className="w-full md:w-auto">
-						{sucursales.map((sucursal) => (
-							<DropdownMenuItem
-								key={sucursal.id}
-								className={`flex items-center space-x-1 w-full md:w-auto ${
-									selectedSucursal === sucursal.id ? "bg-gray-200" : ""
-								}`}
-								onClick={() => handleSucursalChange(sucursal.id)}
+				<div className="flex w-full flex-col md:flex-row justify-between items-center mb-6">
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								variant="secondary"
+								className="flex items-center space-x-1 w-full md:w-auto mb-4 md:mb-0 md:mr-4"
 							>
-								<ListIcon className="w-5 h-5" />
-								<span>{sucursal.nombre}</span>
-							</DropdownMenuItem>
-						))}
-					</DropdownMenuContent>
-				</DropdownMenu>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button
-							variant="secondary"
-							className="flex items-center space-x-1 w-full md:w-auto mt-4 md:mt-0"
-						>
-							<ListIcon className="w-5 h-5" />
-							<span>Categorías</span>
-							<ChevronDownIcon className="w-4 h-4" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="start" className="w-full md:w-auto">
-						{categoriasPrincipales.map((categoria) => (
-							<DropdownMenuItem
-								key={categoria.id}
-								className={`flex items-center space-x-1 w-full md:w-auto ${
-									selectedCategory === categoria.id ||
-									(isPromociones && categoria.id === -1)
-										? "bg-gray-200"
-										: ""
-								}`}
-								onClick={() =>
-									categoria.id === -1
-										? handlePromocionesClick()
-										: handleCategoryClick(categoria.id)
-								}
+								<ListIcon className="w-5 h-5"/>
+								<span>Sucursales</span>
+								<ChevronDownIcon className="w-4 h-4"/>
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="start" className="w-full md:w-auto max-h-64 overflow-y-auto">
+							{sucursales.map((sucursal) => (
+								<DropdownMenuItem
+									key={sucursal.id}
+									className={`flex items-center space-x-1 w-full md:w-auto ${
+										selectedSucursal === sucursal.id ? "bg-gray-200" : ""
+									}`}
+									onClick={() => handleSucursalChange(sucursal.id)}
+								>
+									<span>{sucursal.nombre}</span>
+								</DropdownMenuItem>
+							))}
+						</DropdownMenuContent>
+					</DropdownMenu>
+
+					<div
+						className="flex w-full md:w-auto flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="secondary"
+									className="flex items-center space-x-1 w-full md:w-auto"
+								>
+									<ListIcon className="w-5 h-5"/>
+									<span>Categorías</span>
+									<ChevronDownIcon className="w-4 h-4"/>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="start" className="w-full md:w-auto max-h-64 overflow-y-auto">
+								<DropdownItems
+									categorias={categoriasPrincipales as Categoria[]}
+									handleCategoryClick={handleCategoryClick}
+									selectedCategory={selectedCategory}
+								/>
+							</DropdownMenuContent>
+						</DropdownMenu>
+
+						{promociones.length > 0 && (
+							<Button
+								variant="secondary"
+								className="w-full md:w-auto"
+								onClick={handlePromocionesClick}
 							>
-								<ListIcon className="w-5 h-5" />
-								<span>{categoria.denominacion}</span>
-							</DropdownMenuItem>
-						))}
-					</DropdownMenuContent>
-				</DropdownMenu>
+								Ver Promociones
+							</Button>
+						)}
+					</div>
+				</div>
 			</div>
-			{isLoading ? (
-				<div>Loading...</div>
+
+			{!selectedSucursal ? (
+				<div>Seleccione una Sucursal</div>
+			) : isLoading ? (
+				<div>Cargando...</div>
 			) : (
 				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-					<ArticulosSection articulos={articulos} dispatch={dispatch} />
+					{isPromociones ? (
+						<ArticulosSection
+							articulos={promociones.map((promocion) => ({
+								...promocion,
+								isPromocion: true,
+							}))}
+							dispatch={dispatch}
+						/>
+					) : (
+						<ArticulosSection articulos={articulos} dispatch={dispatch}/>
+					)}
 				</div>
 			)}
 		</div>
+
+
 	);
 };
 
 export default Menu;
+
