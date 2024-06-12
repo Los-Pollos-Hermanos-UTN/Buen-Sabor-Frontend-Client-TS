@@ -150,7 +150,8 @@ const Menu: React.FC = () => {
 		} else {
 			selectedCategorias = allCategorias;
 		}
-		return selectedCategorias.flatMap((categoria) =>
+
+		const articulos = selectedCategorias.flatMap((categoria) =>
 			categoria.articulos
 				.filter((articulo) => !articulo.eliminado && articulo.precioVenta > 0)
 				.map((articulo) => ({
@@ -158,6 +159,12 @@ const Menu: React.FC = () => {
 					categoriaDenominacion: categoria.denominacion,
 				}))
 		);
+
+		if (categoryId === null) {
+			return [...promociones, ...articulos];
+		}
+
+		return articulos;
 	};
 
 	const categoriasPrincipales = [
