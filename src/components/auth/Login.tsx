@@ -13,7 +13,7 @@ interface FormData {
 	password: string;
 	lastname: string;
 	confirmPassword: string;
-	image: File | null;
+	image: string;
 }
 
 const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
@@ -25,7 +25,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 		email: "",
 		password: "",
 		confirmPassword: "",
-		image: null,
+		image: "/user-icon.png", // Ruta de la imagen en la carpeta public
 	});
 
 	const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -45,16 +45,13 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 		};
 
 		try {
-			const userResponse = await fetch(
-				"http://localhost:8080/usuarioCliente/",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify(userPayload),
-				}
-			);
+			const userResponse = await fetch("http://localhost:8080/usuarioCliente/", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(userPayload),
+			});
 
 			if (!userResponse.ok) {
 				throw new Error("Error creating user");
@@ -71,16 +68,19 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 				email: formData.email,
 				fechaNac: new Date().toISOString().split("T")[0],
 				usuario: user,
-				imagenCliente: null,
+				imagenCliente: null, // imagenCliente es null ya que la imagen se pasa como archivo
 				domicilios: [],
 				pedidos: [],
 			};
 
 			const formDataToSend = new FormData();
 			formDataToSend.append("data", JSON.stringify(clientPayload));
-			if (formData.image) {
-				formDataToSend.append("imagenes", formData.image);
-			}
+
+			// Cargar la imagen desde la carpeta public y añadirla al FormData
+			const response = await fetch(formData.image);
+			const blob = await response.blob();
+			const file = new File([blob], "user-icon.png", { type: blob.type });
+			formDataToSend.append("imagenes", file);
 
 			const clientResponse = await fetch("http://localhost:8080/cliente/save", {
 				method: "POST",
@@ -131,7 +131,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 			email: "",
 			password: "",
 			confirmPassword: "",
-			image: null,
+			image: "/user-icon.png", // Ruta de la imagen en la carpeta public
 		});
 	};
 
@@ -157,7 +157,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 						</>
 					) : isRegistering ? (
 						<>
-							<h2 className="text-2xl font-bold">Registras</h2>
+							<h2 className="text-2xl font-bold">Registrarse</h2>
 							<div className="space-y-2">
 								<Label htmlFor="name">Nombre</Label>
 								<Input
