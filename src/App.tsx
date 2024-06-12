@@ -4,6 +4,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import Footer from "./components/Footer/Footer";
 import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 import Navbar from "./components/shared/Navbar";
 import { AuthProvider } from "./context/AuthContext";
 import { GlobalProvider } from "./context/GlobalContext";

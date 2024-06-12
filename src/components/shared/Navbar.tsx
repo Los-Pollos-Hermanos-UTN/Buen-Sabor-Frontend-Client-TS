@@ -13,7 +13,10 @@ const Navbar = () => {
 	const cartItems = state.cart;
 	const cartQuantity = cartItems.length;
 	const totalCartPrice = cartItems
-		.reduce((total, item) => total + item.precioVenta * item.quantity, 0)
+		.reduce((total, item) => {
+			const precio = item.precioPromocional || item.precioVenta;
+			return total + precio * item.quantity;
+		}, 0)
 		.toFixed(2);
 	const popoverRef = useRef<any>(null);
 
@@ -23,7 +26,6 @@ const Navbar = () => {
 		}
 	};
 
-	// TODO: ref
 	return (
 		<header className="bg-white shadow-md duration-200">
 			<nav className="flex justify-between items-center px-4 py-2 mt-2">
@@ -42,7 +44,7 @@ const Navbar = () => {
 						<span className="flex flex-col justify-center">Buen Sabor</span>
 					</Link>
 				</div>
-				<div className="flex items-center space-x-4 relative mr-52">
+				<div className="flex items-center space-x-4 relative">
 					<Login />
 					<Popover ref={popoverRef}>
 						<PopoverTrigger asChild>
@@ -57,38 +59,41 @@ const Navbar = () => {
 							<div>
 								<ScrollArea className="space-y-4 h-48">
 									{cartItems.length > 0 ? (
-										cartItems.map((item) => (
-											<div
-												key={item.id}
-												className="flex items-center justify-between border-t"
-											>
-												<div className="flex items-center space-x-2">
-													<img
-														src={item.imagenes[0]?.url || "/placeholder.svg"}
-														alt={item.denominacion}
-														width={40}
-														height={40}
-														className="w-10 h-10 rounded"
-													/>
-													<p>{item.denominacion}</p>
-												</div>
-												<p className="font-bold">
-													${(item.precioVenta * item.quantity).toFixed(2)}
-												</p>
-												<Button
-													variant="ghost"
-													aria-label="Remove item"
-													onClick={() =>
-														dispatch({
-															type: "REMOVE_FROM_CART",
-															payload: { id: item.id },
-														})
-													}
+										cartItems.map((item) => {
+											const precio = item.precioPromocional || item.precioVenta;
+											return (
+												<div
+													key={item.id}
+													className="flex items-center justify-between border-t"
 												>
-													<XIcon className="w-4 h-4 text-red-500" />
-												</Button>
-											</div>
-										))
+													<div className="flex items-center space-x-2">
+														<img
+															src={item.imagenes[0]?.url || "/placeholder.svg"}
+															alt={item.denominacion}
+															width={40}
+															height={40}
+															className="w-10 h-10 rounded"
+														/>
+														<p>{item.denominacion}</p>
+													</div>
+													<p className="font-bold">
+														${(precio * item.quantity).toFixed(2)}
+													</p>
+													<Button
+														variant="ghost"
+														aria-label="Remove item"
+														onClick={() =>
+															dispatch({
+																type: "REMOVE_FROM_CART",
+																payload: { id: item.id },
+															})
+														}
+													>
+														<XIcon className="w-4 h-4 text-red-500" />
+													</Button>
+												</div>
+											);
+										})
 									) : (
 										<p className="text-center">Tu carrito está vacío.</p>
 									)}

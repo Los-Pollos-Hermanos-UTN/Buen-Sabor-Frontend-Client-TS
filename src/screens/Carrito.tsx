@@ -10,10 +10,13 @@ export default function Carrito() {
 	const navigate = useNavigate();
 	const { cart, selectedSucursal } = state;
 
-	const totalProductos = cart.reduce(
-		(acc, item) => acc + item.precioVenta * item.quantity,
-		0
-	);
+	const totalProductos = cart.reduce((acc, item) => {
+		if (item.promocionDetalles && item.promocionDetalles.length > 0) {
+			return acc + item.precioPromocional * item.quantity;
+		} else {
+			return acc + (item.precioPromocional || item.precioVenta) * item.quantity;
+		}
+	}, 0);
 	const cargosPorDelivery = totalProductos * 0.05;
 	const total = totalProductos + cargosPorDelivery;
 
@@ -85,25 +88,45 @@ export default function Carrito() {
 					email: clientData.email,
 					fechaNac: clientData.fechaNac,
 				},
-				detallePedidos: cart.map((item) => ({
-					id: null,
-					eliminado: false,
-					cantidad: item.quantity,
-					subTotal: item.precioVenta * item.quantity,
-					articulo: {
-						id: item.id,
-						eliminado: false,
-						denominacion: item.denominacion,
-						precioVenta: item.precioVenta,
-						imagenes: item.imagenes,
-						unidadMedida: {
-							id: 1,
+				detallePedidos: cart.flatMap((item) => {
+					if (item.promocionDetalles && item.promocionDetalles.length > 0) {
+						return item.promocionDetalles.map((detalle) => ({
+							id: null,
 							eliminado: false,
-							denominacion: "Gramos",
-						},
-						categoriaId: 2,
-					},
-				})),
+							cantidad: detalle.cantidad,
+							subTotal: 0, // El precio total de la promoción ya se incluye en el pedido
+							articulo: {
+								id: detalle.articulo.id,
+								eliminado: detalle.articulo.eliminado,
+								denominacion: detalle.articulo.denominacion,
+								precioVenta: detalle.articulo.precioVenta,
+								imagenes: detalle.articulo.imagenes,
+								unidadMedida: detalle.articulo.unidadMedida,
+								categoriaId: detalle.articulo.categoriaId,
+							},
+						}));
+					} else {
+						return [{
+							id: null,
+							eliminado: false,
+							cantidad: item.quantity,
+							subTotal: (item.precioPromocional || item.precioVenta) * item.quantity,
+							articulo: {
+								id: item.id,
+								eliminado: false,
+								denominacion: item.denominacion,
+								precioVenta: item.precioPromocional || item.precioVenta,
+								imagenes: item.imagenes,
+								unidadMedida: {
+									id: 1,
+									eliminado: false,
+									denominacion: "Gramos",
+								},
+								categoriaId: 2,
+							},
+						}];
+					}
+				}),
 				empleado: null,
 			};
 
@@ -117,7 +140,7 @@ export default function Carrito() {
 
 			if (response.ok) {
 				toast.success("Pedido enviado con éxito");
-				dispatch({ type: "SET_SELECTED_SUCURSAL", payload: selectedSucursal }); // Clear the cart after sending the order
+				dispatch({ type: "CLEAR_CART" }); // Clear the cart after sending the order
 			} else {
 				toast.error("Error al realizar el pedido");
 			}
@@ -179,7 +202,7 @@ export default function Carrito() {
 							</div>
 							<div className="flex items-center space-x-2">
 								<p className="text-lg font-bold">
-									${(item.precioVenta * item.quantity).toFixed(2)}
+									${((item.precioPromocional || item.precioVenta) * item.quantity).toFixed(2)}
 								</p>
 								<XIcon
 									className="text-gray-400"
@@ -231,8 +254,8 @@ function ArrowRightIcon(props: any) {
 			strokeLinecap="round"
 			strokeLinejoin="round"
 		>
-			<path d="M5 12h14" />
-			<path d="m12 5 7 7-7 7" />
+			<line x1="5" y1="12" x2="19" y2="12" />
+			<polyline points="12 5 19 12 12 19" />
 		</svg>
 	);
 }

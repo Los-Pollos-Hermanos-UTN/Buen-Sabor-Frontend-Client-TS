@@ -115,9 +115,10 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 				login({ id: user.id, nombreUsuario: formData.email, rol: "user" });
 				console.log("Login successful");
 			} else {
-				console.error("Invalid email or password");
+				toast.error("Email o contraseña incorrectos");
 			}
 		} catch (error) {
+			toast.error("Ha habido un error al iniciar sesion");
 			console.error("Error:", error);
 		}
 	};
@@ -156,7 +157,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 						</>
 					) : isRegistering ? (
 						<>
-							<h2 className="text-2xl font-bold">Register</h2>
+							<h2 className="text-2xl font-bold">Registras</h2>
 							<div className="space-y-2">
 								<Label htmlFor="name">Nombre</Label>
 								<Input

@@ -14,15 +14,16 @@ import {
 import DropdownItems from "../components/Menu/DropdownItems";
 import ArticulosSection from "../components/Menu/ArticulosSection";
 
-// TODO: types
 const Menu: React.FC = () => {
 	const { state, dispatch } = useGlobalContext();
 	const { selectedSucursal } = state;
 
 	const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 	const [categorias, setCategorias] = useState<Categoria[]>([]);
+	const [promociones, setPromociones] = useState<Articulo[]>([]);
 	const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
+	const [isPromociones, setIsPromociones] = useState(false);
 
 	useEffect(() => {
 		fetchSucursales();
@@ -32,6 +33,7 @@ const Menu: React.FC = () => {
 		if (selectedSucursal) {
 			setIsLoading(true);
 			fetchCategorias(selectedSucursal);
+			fetchPromociones(selectedSucursal);
 		}
 	}, [selectedSucursal]);
 
@@ -62,6 +64,18 @@ const Menu: React.FC = () => {
 		}
 	};
 
+	const fetchPromociones = async (sucursalId: number) => {
+		try {
+			const response = await fetch(
+				`http://localhost:8080/promocion/sucursal/${sucursalId}`
+			);
+			const data = await response.json();
+			setPromociones(data);
+		} catch (error) {
+			console.error("Error fetching promociones:", error);
+		}
+	};
+
 	const filterEmptyCategorias = (categorias: Categoria[]) => {
 		return categorias.filter((categoria) => {
 			const validArticulos = categoria.articulos.filter(
@@ -85,10 +99,17 @@ const Menu: React.FC = () => {
 	const handleSucursalChange = (sucursalId: number) => {
 		dispatch({ type: "SET_SELECTED_SUCURSAL", payload: sucursalId });
 		setSelectedCategory(null);
+		setIsPromociones(false);
 	};
 
 	const handleCategoryClick = (categoryId: number | null) => {
 		setSelectedCategory(categoryId);
+		setIsPromociones(false);
+	};
+
+	const handlePromocionesClick = () => {
+		setSelectedCategory(null);
+		setIsPromociones(true);
 	};
 
 	const flattenCategorias = (categorias: Categoria[]): Categoria[] => {
@@ -139,9 +160,11 @@ const Menu: React.FC = () => {
 		);
 	};
 
-	// TODO: fix type
 	const categoriasPrincipales = [
-		{ id: null, denominacion: "Todo" },
+		...(categorias.some((categoria) => categoria.articulos.length > 0 || categoria.subCategorias.length > 0)
+			? [{ id: null, denominacion: "Todo" }]
+			: []),
+		...(promociones.length > 0 ? [{ id: -1, denominacion: "Promociones" }] : []),
 		...categorias.filter(
 			(categoria) =>
 				!categoria.padreId &&
@@ -150,7 +173,9 @@ const Menu: React.FC = () => {
 		),
 	];
 
-	const articulos = getArticulos(categorias, selectedCategory);
+	const articulos = isPromociones
+		? promociones
+		: getArticulos(categorias, selectedCategory);
 
 	return (
 		<div className="bg-white p-6 md:p-8 lg:p-10">
@@ -193,12 +218,25 @@ const Menu: React.FC = () => {
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start" className="w-full md:w-auto">
-						{/* TODO: fix type */}
-						<DropdownItems
-							categorias={categoriasPrincipales as Categoria[]}
-							handleCategoryClick={handleCategoryClick}
-							selectedCategory={selectedCategory}
-						/>
+						{categoriasPrincipales.map((categoria) => (
+							<DropdownMenuItem
+								key={categoria.id}
+								className={`flex items-center space-x-1 w-full md:w-auto ${
+									selectedCategory === categoria.id ||
+									(isPromociones && categoria.id === -1)
+										? "bg-gray-200"
+										: ""
+								}`}
+								onClick={() =>
+									categoria.id === -1
+										? handlePromocionesClick()
+										: handleCategoryClick(categoria.id)
+								}
+							>
+								<ListIcon className="w-5 h-5" />
+								<span>{categoria.denominacion}</span>
+							</DropdownMenuItem>
+						))}
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</div>
