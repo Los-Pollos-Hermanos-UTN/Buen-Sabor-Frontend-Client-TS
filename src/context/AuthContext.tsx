@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 	const fetchUserDetails = async (id: any) => {
 		try {
 			const response = await fetch(
-				`http://localhost:8080/usuarioCliente/${id}/cliente`
+				`http://localhost:8080/cliente/${id}`
 			);
 			if (!response.ok) {
 				throw new Error("Error fetching user details");

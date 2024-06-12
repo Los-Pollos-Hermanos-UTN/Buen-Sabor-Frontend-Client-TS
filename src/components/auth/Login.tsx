@@ -9,9 +9,9 @@ import { toast } from "react-toastify";
 
 interface FormData {
 	name: string;
+	lastname: string;
 	email: string;
 	password: string;
-	lastname: string;
 	confirmPassword: string;
 	image: string;
 }
@@ -37,88 +37,106 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 	};
 
 	const handleRegister = async () => {
-		const userPayload = {
-			id: 0,
+		if (formData.password !== formData.confirmPassword) {
+			toast.error("Las contraseñas no coinciden");
+			return;
+		}
+
+		const clientPayload = {
+			id: null,
 			eliminado: false,
-			auth0Id: formData.password,
-			userName: formData.email,
+			nombre: formData.name,
+			apellido: formData.lastname,
+			telefono: "",
+			email: formData.email,
+			contrasenia: formData.password,
+			fechaNac: new Date().toISOString().split("T")[0],
+			usuario: {
+				id: null,
+				eliminado: false,
+				auth0Id: formData.password,
+				userName: formData.email
+			},
+			imagenCliente: null, // Se establecerá más adelante
+			domicilios: [
+				{
+					id: null,
+					eliminado: false,
+					calle: "Siempreviva",
+					numero: 123,
+					cp: 5501,
+					piso: 1,
+					nroDepto: 3,
+					localidad: {
+						id: 1,
+						eliminado: false,
+						nombre: "Saavedra",
+						provincia: {
+							id: 1,
+							eliminado: false,
+							nombre: "Ciudad Autónoma de Buenos Aires",
+							pais: {
+								id: 1,
+								eliminado: false,
+								nombre: "Argentina"
+							}
+						}
+					}
+				}
+			],
+			pedidos: null,
 		};
 
+		const formDataToSend = new FormData();
+		formDataToSend.append("data", JSON.stringify(clientPayload));
+
+		// Cargar la imagen desde la carpeta public y añadirla al FormData
+		const response = await fetch(formData.image);
+		const blob = await response.blob();
+		const file = new File([blob], "user-icon.png", { type: blob.type });
+		formDataToSend.append("imagenes", file);
+
 		try {
-			const userResponse = await fetch("http://localhost:8080/usuarioCliente/", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(userPayload),
-			});
-
-			if (!userResponse.ok) {
-				throw new Error("Error creating user");
-			}
-
-			const user = await userResponse.json();
-
-			const clientPayload = {
-				id: 0,
-				eliminado: false,
-				nombre: formData.name,
-				apellido: formData.lastname,
-				telefono: "",
-				email: formData.email,
-				fechaNac: new Date().toISOString().split("T")[0],
-				usuario: user,
-				imagenCliente: null, // imagenCliente es null ya que la imagen se pasa como archivo
-				domicilios: [],
-				pedidos: [],
-			};
-
-			const formDataToSend = new FormData();
-			formDataToSend.append("data", JSON.stringify(clientPayload));
-
-			// Cargar la imagen desde la carpeta public y añadirla al FormData
-			const response = await fetch(formData.image);
-			const blob = await response.blob();
-			const file = new File([blob], "user-icon.png", { type: blob.type });
-			formDataToSend.append("imagenes", file);
-
-			const clientResponse = await fetch("http://localhost:8080/cliente/save", {
+			const clientResponse = await fetch("http://localhost:8080/cliente/register", {
 				method: "POST",
 				body: formDataToSend,
 			});
 
 			if (!clientResponse.ok) {
 				toast.error("Hubo un error registrando el cliente");
+				return;
 			}
 
+			const user = await clientResponse.json();
 			login({ id: user.id, nombreUsuario: formData.email, rol: "user" });
-			console.log("Client registered successfully");
+			console.log("Cliente registrado exitosamente");
 		} catch (error) {
 			console.error("Error:", error);
 		}
 	};
 
 	const handleLogin = async () => {
+		const formDataToSend = new FormData();
+		formDataToSend.append("email", formData.email);
+		formDataToSend.append("contrasenia", formData.password);
+
 		try {
-			const response = await fetch("http://localhost:8080/usuarioCliente");
+			const response = await fetch("http://localhost:8080/cliente/login", {
+				method: "POST",
+				body: formDataToSend,
+			});
+
 			if (!response.ok) {
-				throw new Error("Error fetching users");
+				const errorMessage = await response.text();
+				toast.error(errorMessage || "Email o contraseña incorrectos");
+				return;
 			}
 
-			const users = await response.json();
-			const user = users.find(
-				(user: any) =>
-					user.userName === formData.email && user.auth0Id === formData.password
-			);
-
-			if (user) {
-				login({ id: user.id, nombreUsuario: formData.email, rol: "user" });
-				console.log("Login successful");
-			} else {
-				toast.error("Email o contraseña incorrectos");
-			}
+			const user = await response.json();
+			login({ id: user.id, nombreUsuario: formData.email, rol: "user" });
+			console.log("Inicio de sesión exitoso");
 		} catch (error) {
-			toast.error("Ha habido un error al iniciar sesion");
+			toast.error("Ha habido un error al iniciar sesión");
 			console.error("Error:", error);
 		}
 	};
@@ -135,7 +153,6 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 		});
 	};
 
-	// TODO: ref
 	return (
 		<Popover ref={popoverRef}>
 			<PopoverTrigger asChild>
@@ -152,7 +169,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 								className="bg-primary hover:bg-secondary duration-200 text-white w-full"
 								onClick={logout}
 							>
-								Logout
+								Cerrar sesión
 							</Button>
 						</>
 					) : isRegistering ? (
@@ -225,25 +242,25 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 								Registrarse
 							</Button>
 							<p className="text-center text-sm text-gray-500">
-								Ya tienes una cuenta?{" "}
+								¿Ya tienes una cuenta?{" "}
 								<button
 									type="button"
 									className="font-medium underline"
 									onClick={toggleRegistering}
 								>
-									Iniciar Sesión
+									Iniciar sesión
 								</button>
 							</p>
 						</>
 					) : (
 						<>
-							<h2 className="text-2xl font-bold">Login</h2>
+							<h2 className="text-2xl font-bold">Iniciar sesión</h2>
 							<div className="space-y-2">
 								<Label htmlFor="email">Email</Label>
 								<Input
 									id="email"
 									type="email"
-									placeholder="Enter your email"
+									placeholder="Ingresa tu email"
 									className="w-full"
 									autoComplete="off"
 									value={formData.email}
@@ -251,11 +268,11 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="password">Password</Label>
+								<Label htmlFor="password">Contraseña</Label>
 								<Input
 									id="password"
 									type="password"
-									placeholder="Enter your password"
+									placeholder="Ingresa tu contraseña"
 									className="w-full"
 									autoComplete="off"
 									value={formData.password}
@@ -266,16 +283,16 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 								className="bg-primary hover:bg-secondary duration-200 text-white w-full"
 								onClick={handleLogin}
 							>
-								Login
+								Iniciar sesión
 							</Button>
 							<p className="text-center text-sm text-gray-500">
-								Don't have an account?{" "}
+								¿No tienes una cuenta?{" "}
 								<button
 									type="button"
 									className="font-medium underline"
 									onClick={toggleRegistering}
 								>
-									Register
+									Registrarse
 								</button>
 							</p>
 						</>

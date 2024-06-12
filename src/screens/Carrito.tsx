@@ -35,9 +35,7 @@ export default function Carrito() {
 		}
 
 		try {
-			const response = await fetch(
-				`http://localhost:8080/usuarioCliente/${userId}/cliente`
-			);
+			const response = await fetch(`http://localhost:8080/cliente/${userId}`);
 			if (!response.ok) {
 				throw new Error("Error fetching client data");
 			}
@@ -93,7 +91,7 @@ export default function Carrito() {
 						return item.promocionDetalles.map((detalle) => ({
 							id: null,
 							eliminado: false,
-							cantidad: detalle.cantidad,
+							cantidad: detalle.cantidad * item.quantity, // Multiplicar por la cantidad de promociones
 							subTotal: 0, // El precio total de la promoción ya se incluye en el pedido
 							articulo: {
 								id: detalle.articulo.id,
@@ -138,9 +136,13 @@ export default function Carrito() {
 				body: JSON.stringify(pedido),
 			});
 
-			if (response.ok) {
+			const saveData = await saveResponse.json(); // Obteniendo el JSON de la respuesta
+
+			if (saveData.estado === "PENDIENTE") {
 				toast.success("Pedido enviado con éxito");
 				dispatch({ type: "CLEAR_CART" }); // Clear the cart after sending the order
+			} else if (saveData.estado === "RECHAZADO") {
+				toast.error("El pedido fue rechazado");
 			} else {
 				toast.error("Error al realizar el pedido");
 			}
