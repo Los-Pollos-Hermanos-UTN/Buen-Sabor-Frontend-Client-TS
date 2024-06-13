@@ -1,23 +1,57 @@
-/**
- * v0 by Vercel.
- * @see https://v0.dev/t/BH32ItCQx6F
- * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
- */
-"use client"
 
-import { useState } from "react"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "../components/ui/Button.tsx"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+
+import {useEffect, useState} from "react"
+import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/Avatar"
+import { Button } from "../components/ui/Button"
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "../components/ui/Card"
+import { Label } from "../components/ui/Label"
+import { Input } from "../components/ui/Input"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../components/ui/Select"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/Tabs"
+import { Badge } from "../components/ui/Badge"
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+
+
+
 
 export default function Component() {
     const [isProfileEditOpen, setIsProfileEditOpen] = useState(false)
     const [showExitModal, setShowExitModal] = useState(false)
+    const { isLoggedIn, userId } = useAuth();
+    const [profileImage, setProfileImage] = useState(null);
+    const [currentOrders, setCurrentOrders] = useState([]);
+    const [previousOrders, setPreviousOrders] = useState([]);
+
+    useEffect(() => {
+        if (isLoggedIn && userId) {
+            axios.get(`http://localhost:8080/pedido/cliente/${userId}`)
+                .then(response => {
+                    const orders = response.data;
+                    const current = orders.filter(order => ["PENDIENTE", "RETIRAR", "PREPARACION"].includes(order.estado));
+                    const previous = orders.filter(order => ["ENTREGADO", "RECHAZADO", "CANCELADO"].includes(order.estado));
+                    setCurrentOrders(current);
+                    setPreviousOrders(previous);
+                })
+                .catch(error => {
+                    console.error("Error fetching orders:", error);
+                });
+        }
+    }, [isLoggedIn, userId]);
+
+    const handleProfileImageChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfileImage(reader.result);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setProfileImage(null);
+        }
+    };
+
     return (
         <div className="flex flex-col w-full min-h-screen bg-gray-100 dark:bg-gray-950">
             <header className="bg-white dark:bg-gray-900 shadow">
@@ -38,162 +72,8 @@ export default function Component() {
                 </div>
             </header>
             <main className="container mx-auto py-8 px-4 md:px-6 flex-1 grid md:grid-cols-[1fr_300px] gap-8">
-                <div>
-                    <Tabs defaultValue="previous">
-                        <TabsList>
-                            <TabsTrigger value="previous">Pedidos anteriores</TabsTrigger>
-                            <TabsTrigger value="current">Pedidos actuales</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="previous">
-                            <div className="grid gap-4">
-                                <Card>
-                                    <CardHeader>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <img
-                                                    src="/placeholder.svg"
-                                                    width={48}
-                                                    height={48}
-                                                    alt="Logo del restaurante"
-                                                    className="rounded-full"
-                                                />
-                                                <div>
-                                                    <h3 className="font-semibold">Acme Burgers</h3>
-                                                    <p className="text-gray-500 dark:text-gray-400 text-sm">15 de junio de 2023</p>
-                                                </div>
-                                            </div>
-                                            <Badge variant="outline" className="px-2 py-1 text-sm">
-                                                Entregado
-                                            </Badge>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="grid gap-2">
-                                            <div className="flex items-center justify-between">
-                                                <p>1x Cheeseburger</p>
-                                                <p>$9.99</p>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <p>2x Papas fritas</p>
-                                                <p>$4.99</p>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <p>1x Refresco</p>
-                                                <p>$2.99</p>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter>
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-gray-500 dark:text-gray-400 text-sm">Total: $17.97</p>
-                                            <Button variant="outline" size="sm">
-                                                Volver a pedir
-                                            </Button>
-                                        </div>
-                                    </CardFooter>
-                                </Card>
-                                <Card>
-                                    <CardHeader>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <img
-                                                    src="/placeholder.svg"
-                                                    width={48}
-                                                    height={48}
-                                                    alt="Logo del restaurante"
-                                                    className="rounded-full"
-                                                />
-                                                <div>
-                                                    <h3 className="font-semibold">Sushi Delight</h3>
-                                                    <p className="text-gray-500 dark:text-gray-400 text-sm">30 de mayo de 2023</p>
-                                                </div>
-                                            </div>
-                                            <Badge variant="outline" className="px-2 py-1 text-sm">
-                                                Entregado
-                                            </Badge>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="grid gap-2">
-                                            <div className="flex items-center justify-between">
-                                                <p>1x California Roll</p>
-                                                <p>$12.99</p>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <p>2x Sopa de miso</p>
-                                                <p>$4.99</p>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <p>1x Té verde</p>
-                                                <p>$2.99</p>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter>
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-gray-500 dark:text-gray-400 text-sm">Total: $20.97</p>
-                                            <Button variant="outline" size="sm">
-                                                Volver a pedir
-                                            </Button>
-                                        </div>
-                                    </CardFooter>
-                                </Card>
-                            </div>
-                        </TabsContent>
-                        <TabsContent value="current">
-                            <div className="grid gap-4">
-                                <Card>
-                                    <CardHeader>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <img
-                                                    src="/placeholder.svg"
-                                                    width={48}
-                                                    height={48}
-                                                    alt="Logo del restaurante"
-                                                    className="rounded-full"
-                                                />
-                                                <div>
-                                                    <h3 className="font-semibold">Acme Burgers</h3>
-                                                    <p className="text-gray-500 dark:text-gray-400 text-sm">23 de junio de 2023</p>
-                                                </div>
-                                            </div>
-                                            <Badge variant="outline" className="px-2 py-1 text-sm">
-                                                Preparando
-                                            </Badge>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="grid gap-2">
-                                            <div className="flex items-center justify-between">
-                                                <p>1x Cheeseburger</p>
-                                                <p>$9.99</p>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <p>2x Papas fritas</p>
-                                                <p>$4.99</p>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <p>1x Refresco</p>
-                                                <p>$2.99</p>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter>
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-gray-500 dark:text-gray-400 text-sm">Total: $17.97</p>
-                                            <Button variant="outline" size="sm">
-                                                Cancelar
-                                            </Button>
-                                        </div>
-                                    </CardFooter>
-                                </Card>
-                            </div>
-                        </TabsContent>
-                    </Tabs>
-                </div>
-                <div className="grid gap-4">
-                    {isProfileEditOpen && (
+                {isProfileEditOpen && (
+                    <div className="order-1 md:order-2 grid gap-4">
                         <Card className="relative">
                             <div className="absolute top-4 right-4">
                                 <Button variant="ghost" size="icon" onClick={() => setShowExitModal(true)}>
@@ -224,21 +104,201 @@ export default function Component() {
                                         <Label htmlFor="dateOfBirth">Fecha de nacimiento</Label>
                                         <Input id="dateOfBirth" type="date" />
                                     </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="profileImage">Imagen de perfil</Label>
-                                        <Input id="profileImage" type="file" />
+                                    <div className="grid gap-2 ">
+                                        <label htmlFor="profileImage">Imagen de perfil</label>
+                                        <div className="grid grid-cols-[auto_1fr] items-center gap-4">
+                                            <div
+                                                className="h-20 w-20 overflow-hidden rounded-full cursor-pointer "
+                                                onClick={() => document.getElementById("profileImage").click()}
+                                            >
+                                                {profileImage ? (
+                                                    <img
+                                                        src={profileImage}
+                                                        alt="Profile Image"
+                                                        width={80}
+                                                        height={80}
+                                                        className="object-cover"
+                                                    />
+                                                ) : (
+                                                    <div
+                                                        className="flex text-sm items-center justify-center h-full w-full bg-gray-200 text-gray-500">
+                                                        Seleccionar imagen
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <input
+                                                id="profileImage"
+                                                type="file"
+                                                className="hidden"
+                                                onChange={handleProfileImageChange}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="address">Dirección</Label>
-                                    <Textarea id="address" defaultValue="123 Main St, Anytown USA" />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="street">Calle</Label>
+                                            <Input id="street" defaultValue="123 Main St"/>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="number">Número</Label>
+                                            <Input id="number" defaultValue="123"/>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="zipCode">Código postal</Label>
+                                            <Input id="zipCode" defaultValue="12345"/>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="floor">Piso</Label>
+                                            <Input id="floor" defaultValue="2" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="apartment">Nro depto</Label>
+                                            <Input id="apartment" defaultValue="4A" />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="city">Localidad</Label>
+                                            <Select>
+                                                <SelectTrigger className="text-gray-500 dark:text-gray-400">
+                                                    <SelectValue placeholder="Seleccionar localidad" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="anytown">Anytown</SelectItem>
+                                                    <SelectItem value="othertown">Othertown</SelectItem>
+                                                    <SelectItem value="newcity">New City</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="state">Provincia</Label>
+                                            <Select>
+                                                <SelectTrigger className="text-gray-500 dark:text-gray-400">
+                                                    <SelectValue placeholder="Seleccionar provincia" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="ca">California</SelectItem>
+                                                    <SelectItem value="ny">New York</SelectItem>
+                                                    <SelectItem value="tx">Texas</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="country">País</Label>
+                                            <Select>
+                                                <SelectTrigger className="text-gray-500 dark:text-gray-400">
+                                                    <SelectValue placeholder="Seleccionar país" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="usa">Estados Unidos</SelectItem>
+                                                    <SelectItem value="can">Canadá</SelectItem>
+                                                    <SelectItem value="mex">México</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
                                 </div>
                             </CardContent>
                             <CardFooter>
                                 <Button>Guardar cambios</Button>
                             </CardFooter>
                         </Card>
-                    )}
+                    </div>
+                )}
+                <div className="order-2 md:order-1">
+                    <Tabs defaultValue="actuales">
+                        <TabsList>
+                            <TabsTrigger value="actuales">Pedidos actuales</TabsTrigger>
+                            <TabsTrigger value="anteriores">Pedidos anteriores</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="actuales">
+                            {currentOrders.length === 0 ? (
+                                <p className="text-center py-4">No tienes pedidos actuales.</p>
+                            ) : (
+                                currentOrders.map(order => (
+                                    <div className="mb-4">
+                                <Card>
+                                    <CardHeader>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div>
+                                                    <h3 className="font-semibold">{order.sucursal.nombre}</h3>
+                                                    <p className="text-gray-500 dark:text-gray-400 text-sm">Fecha del pedido: {order.fechaPedido}</p>
+                                                </div>
+                                            </div>
+                                            <Badge variant="outline" className="px-2 py-1 text-sm">
+                                                {order.estado}
+                                            </Badge>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid gap-2">
+                                            {order.detallePedidos.map(detalle => (
+                                                <div className="flex items-center justify-between" key={detalle.id}>
+                                                    <p>{detalle.cantidad}x {detalle.articulo.denominacion}</p>
+                                                    <p>${detalle.subTotal.toFixed(2)}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                    <CardFooter>
+                                        <div className="flex items-center justify-between w-full">
+                                            <p className="text-gray-500 dark:text-gray-400 text-sm">Total: ${order.total}</p>
+                                        </div>
+                                    </CardFooter>
+                                </Card>
+                                    </div>
+                                ))
+                            )}
+                        </TabsContent>
+                        <TabsContent value="anteriores">
+                            {previousOrders.length === 0 ? (
+                                <p className="text-center py-4">No tienes pedidos actuales.</p>
+                            ) : (
+                                previousOrders.map(order => (
+                                    <div className="mb-4">
+                                        <Card>
+                                            <CardHeader>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <div>
+                                                            <h3 className="font-semibold">{order.sucursal.nombre}</h3>
+                                                            <p className="text-gray-500 dark:text-gray-400 text-sm">Fecha del pedido: {order.fechaPedido}</p>
+                                                        </div>
+                                                    </div>
+                                                    <Badge variant="outline" className="px-2 py-1 text-sm">
+                                                        {order.estado}
+                                                    </Badge>
+                                                </div>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="grid gap-2">
+                                                    {order.detallePedidos.map(detalle => (
+                                                        <div className="flex items-center justify-between" key={detalle.id}>
+                                                            <p>{detalle.cantidad}x {detalle.articulo.denominacion}</p>
+                                                            <p>${detalle.subTotal.toFixed(2)}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </CardContent>
+                                            <CardFooter>
+                                                <div className="flex items-center justify-between w-full">
+                                                    <p className="text-gray-500 dark:text-gray-400 text-sm">Total: ${order.total}</p>
+                                                </div>
+                                            </CardFooter>
+                                        </Card>
+                                    </div>
+                                ))
+                            )}
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </main>
             {showExitModal && (

@@ -169,7 +169,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 
 							<div className="flex space-x-2 mt-4">
 
-								<Link to="/menu" className="w-1/2">
+								<Link to="/profile" className="w-1/2">
 									<Button
 										variant="outline"
 										className="w-full border-primary text-primary hover:text-secondary hover:border-secondary"

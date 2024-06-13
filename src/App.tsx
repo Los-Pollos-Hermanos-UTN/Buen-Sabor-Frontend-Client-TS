@@ -11,6 +11,7 @@ import { GlobalProvider } from "./context/GlobalContext";
 import Carrito from "./screens/Carrito";
 import Menu from "./screens/Menu";
 import Hero from "./screens/Hero";
+import User from "./screens/User.tsx";
 
 const App: React.FC = () => {
 	React.useEffect(() => {
@@ -33,6 +34,7 @@ const App: React.FC = () => {
 						<Route path="/" element={<Hero />} />
 						<Route path="/carrito" element={<Carrito />} />
 						<Route path="/menu" element={<Menu />} />{" "}
+						<Route path="/profile" element={<User />} />{" "}
 					</Routes>
 					<Footer />
 				</GlobalProvider>

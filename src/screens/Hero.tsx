@@ -23,7 +23,7 @@ const Hero = () => {
 							<h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold font-lobster">
 								Bienvenido al{" "}
 								<span className="bg-clip-text text-transparent bg-gradient-to-b from-primary to-secondary">
-									Buen Sabor
+									Buen Saborㅤ
 								</span>
 							</h1>
 							<p className="text-sm">
