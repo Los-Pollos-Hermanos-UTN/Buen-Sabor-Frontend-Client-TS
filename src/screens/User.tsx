@@ -9,7 +9,6 @@ import { Input } from "../components/ui/Input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../components/ui/Select"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/Tabs"
 import { Badge } from "../components/ui/Badge"
-import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
 
@@ -25,11 +24,19 @@ export default function Component() {
 
     useEffect(() => {
         if (isLoggedIn && userId) {
-            axios.get(`http://localhost:8080/pedido/cliente/${userId}`)
+            fetch(`http://localhost:8080/pedido/cliente/${userId}`)
                 .then(response => {
-                    const orders = response.data;
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const orders = data;
                     const current = orders.filter(order => ["PENDIENTE", "RETIRAR", "PREPARACION"].includes(order.estado));
                     const previous = orders.filter(order => ["ENTREGADO", "RECHAZADO", "CANCELADO"].includes(order.estado));
+                    previous.reverse()
+                    current.reverse()
                     setCurrentOrders(current);
                     setPreviousOrders(previous);
                 })
@@ -38,6 +45,7 @@ export default function Component() {
                 });
         }
     }, [isLoggedIn, userId]);
+
 
     const handleProfileImageChange = (event) => {
         const file = event.target.files[0];
