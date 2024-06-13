@@ -238,9 +238,13 @@ const Menu: React.FC = () => {
 			</div>
 
 			{!selectedSucursal ? (
-				<div>Seleccione una Sucursal</div>
+				<div className="w-full flex justify-center items-center" style={{height: '50vh'}}>
+					Seleccione una Sucursal
+				</div>
 			) : isLoading ? (
-				<div>Cargando...</div>
+				<div className="w-full flex justify-center items-center" style={{height: '50vh'}}>
+					Cargando...
+				</div>
 			) : (
 				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 					{isPromociones ? (

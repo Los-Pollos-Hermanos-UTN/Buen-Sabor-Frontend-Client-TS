@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, forwardRef } from "react";
+import React, { useState, ChangeEvent, forwardRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { UserIcon } from "lucide-react";
 import { Button } from "../ui/Button";
@@ -6,6 +6,7 @@ import { Input } from "../ui/Input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 import { Label } from "../ui/Label";
 import { toast } from "react-toastify";
+import {Link} from "react-router-dom";
 
 interface FormData {
 	name: string;
@@ -165,12 +166,25 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 					{isLoggedIn ? (
 						<>
 							<h2 className="text-2xl font-bold">Bienvenido, {username}</h2>
-							<Button
-								className="bg-primary hover:bg-secondary duration-200 text-white w-full"
-								onClick={logout}
-							>
-								Cerrar sesión
-							</Button>
+
+							<div className="flex space-x-2 mt-4">
+
+								<Link to="/menu" className="w-1/2">
+									<Button
+										variant="outline"
+										className="w-full border-primary text-primary hover:text-secondary hover:border-secondary"
+									>
+										Mi Perfil
+									</Button>
+								</Link>
+								<Button
+									className="bg-primary hover:bg-secondary duration-200 text-white w-1/2"
+									onClick={logout}
+								>
+									Cerrar sesión
+								</Button>
+							</div>
+
 						</>
 					) : isRegistering ? (
 						<>
