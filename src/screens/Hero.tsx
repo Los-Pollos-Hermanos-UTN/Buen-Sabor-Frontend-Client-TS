@@ -44,8 +44,6 @@ const Hero = () => {
 					</div>
 				</div>
 			</div>
-			<PromotionsSection />
-			<Banner />
 		</>
 	);
 };

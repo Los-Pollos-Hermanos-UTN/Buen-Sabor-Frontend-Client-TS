@@ -21,6 +21,11 @@ const reducer = (state: State, action: Action): State => {
 				selectedSucursal: action.payload,
 				cart: [],
 			};
+		case "CLEAR_CART":
+			return {
+				...state,
+				cart: [],
+			};
 		case "ADD_TO_CART":
 			const item = state.cart.find(
 				(cartItem) => cartItem.id === action.payload.id

@@ -157,7 +157,7 @@ export default function Carrito() {
 
 			if (saveData.estado === "PENDIENTE") {
 				toast.success("Pedido enviado con éxito");
-				dispatch({ type: "CLEAR_CART" }); // Clear the cart after sending the order
+				dispatch({ type: "CLEAR_CART" });
 			} else if (saveData.estado === "RECHAZADO") {
 				toast.error("El pedido fue rechazado por falta de stock");
 			} else {
@@ -177,6 +177,11 @@ export default function Carrito() {
 					<EllipsisVerticalIcon className="text-gray-400" />
 				</div>
 				<div className="space-y-4 py-4">
+					{cart.length === 0 ? (
+					<div className="flex justify-center items-center h-64">
+						<h2 className="text-2xl font-bold">Tu carrito está vacío</h2>
+					</div>
+						) : (<div/>)}
 					{cart.map((item) => (
 						<div className="flex items-center justify-between" key={item.id}>
 							<div className="flex items-center space-x-2">
@@ -196,7 +201,7 @@ export default function Carrito() {
 											onClick={() =>
 												dispatch({
 													type: "UPDATE_CART_QUANTITY",
-													payload: { id: item.id, quantity: item.quantity - 1 },
+													payload: {id: item.id, quantity: item.quantity - 1},
 												})
 											}
 											disabled={item.quantity <= 1}
@@ -210,7 +215,7 @@ export default function Carrito() {
 											onClick={() =>
 												dispatch({
 													type: "UPDATE_CART_QUANTITY",
-													payload: { id: item.id, quantity: item.quantity + 1 },
+													payload: {id: item.id, quantity: item.quantity + 1},
 												})
 											}
 										>
@@ -226,7 +231,7 @@ export default function Carrito() {
 								<XIcon
 									className="text-gray-400"
 									onClick={() =>
-										dispatch({ type: "REMOVE_FROM_CART", payload: item })
+										dispatch({type: "REMOVE_FROM_CART", payload: item})
 									}
 								/>
 							</div>
