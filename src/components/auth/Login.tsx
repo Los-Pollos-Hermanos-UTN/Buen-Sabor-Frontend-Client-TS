@@ -18,11 +18,11 @@ interface FormData {
     contrasenia: string;
     domicilios: [];
     usuario: {
-        id: null,
-        eliminado: false,
-        auth0Id: string,
-        userName: string
-    }
+        id: null;
+        eliminado: false;
+        auth0Id: string;
+        userName: string;
+    };
 }
 
 const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
@@ -37,7 +37,6 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
             auth0Id: "",
             userName: ""
         }
-
     });
 
     const validateFields = () => {
@@ -81,30 +80,28 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
     };
 
     const handleRegister = async () => {
-
         if (!validateFields()) {
             return;
         }
 
+        const updatedFormData = {
+            ...formData,
+            usuario: {
+                ...formData.usuario,
+                auth0Id: formData.email,
+                userName: formData.email
+            }
+        };
 
         const formDataToSend = new FormData();
-        formDataToSend.append("data", JSON.stringify(formData));
+        formDataToSend.append("data", JSON.stringify(updatedFormData));
 
-        const response = await fetch(formData.imagenCliente);
+        const response = await fetch(updatedFormData.imagenCliente);
         const blob = await response.blob();
         const file = new File([blob], "user-icon.png", {type: blob.type});
         formDataToSend.append("imagenes", file);
 
-        setFormData(prevFormData => ({
-            ...prevFormData,
-            usuario: {
-                ...prevFormData.usuario,
-                auth0Id: prevFormData.email,
-                userName: prevFormData.email
-            }
-        }));
         try {
-
             const clientResponse = await fetch("http://localhost:8080/cliente/register", {
                 method: "POST",
                 body: formDataToSend,
@@ -116,7 +113,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
             }
 
             const user = await clientResponse.json();
-            login({id: user.id, nombreUsuario: formData.email, rol: "user"});
+            login({id: user.id, nombreUsuario: updatedFormData.email, rol: "user"});
             console.log("Cliente registrado exitosamente");
         } catch (error) {
             console.error("Error:", error);
@@ -153,7 +150,13 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
         setIsRegistering((prevState) => !prevState);
         setFormData({
             contrasenia: "",
-            nombre: '', apellido: '', email: '', telefono: '', fechaNac: '', imagenCliente: "/user-icon.png", domicilios: []
+            nombre: '', apellido: '', email: '', telefono: '', fechaNac: '', imagenCliente: "/user-icon.png", domicilios: [],
+            usuario: {
+                id: null,
+                eliminado: false,
+                auth0Id: "",
+                userName: ""
+            }
         });
     };
 
