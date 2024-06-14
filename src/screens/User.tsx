@@ -209,6 +209,37 @@ export default function User() {
         return true;
     };
 
+    const handleSaveAsPDF = async (pedidoId: number) => {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/pedido/pdf/${pedidoId}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/pdf",
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Error generating PDF");
+            }
+
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "factura.pdf");
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+
+        } catch (error) {
+        console.error("Error generating PDF:", error);
+    }
+    }
+
     const handleSaveChanges = async () => {
         if (!validateFields()) {
             return;
@@ -471,6 +502,9 @@ export default function User() {
                                         <p className="text-gray-500 dark:text-gray-400 text-sm">Total:
                                             ${order.total}</p>
                                     </div>
+                                    <Button variant="outline" onClick={() => handleSaveAsPDF(order.id)}>
+                                        Descargar Factura
+                                    </Button>
                                 </CardFooter>
                             </Card>
                         </div>)))}
@@ -508,6 +542,9 @@ export default function User() {
                                         <p className="text-gray-500 dark:text-gray-400 text-sm">Total:
                                             ${order.total}</p>
                                     </div>
+                                    <Button variant="outline" onClick={() => handleSaveAsPDF(order.id)}>
+                                        Descargar Factura
+                                    </Button>
                                 </CardFooter>
                             </Card>
                         </div>)))}
@@ -529,9 +566,11 @@ export default function User() {
                         ¿Estás seguro de que quieres salir sin guardar los cambios?
                     </p>
                     <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setShowExitModal(false)}>
-                            Cancelar
+                        {currentOrders.map(order => (
+                        <Button variant="outline" onClick={() => handleSaveAsPDF(order.id)}>
+                            Descargar Factura
                         </Button>
+                            ))}
                         <Button
                             onClick={() => {
                                 setCliente(originalCliente);

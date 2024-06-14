@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../context/GlobalContext";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/Button";
+import { PaymentForm } from "../components/Cart/PaymentForm.tsx";
 
 export default function Carrito() {
 	const { state, dispatch } = useGlobalContext();
@@ -12,6 +13,7 @@ export default function Carrito() {
 	const { cart, selectedSucursal } = state;
 
 	const [tipoEnvio, setTipoEnvio] = useState("DELIVERY");
+	const [formaPago, setFormaPago] = useState("EFECTIVO");
 
 	const totalProductos = cart.reduce((acc, item) => {
 		if (item.promocionDetalles && item.promocionDetalles.length > 0) {
@@ -20,8 +22,7 @@ export default function Carrito() {
 			return acc + (item.precioPromocional || item.precioVenta) * item.quantity;
 		}
 	}, 0);
-	const cargosPorDelivery = tipoEnvio === "DELIVERY" ? totalProductos * 0.05 : 0;
-	const total = totalProductos + cargosPorDelivery;
+	const total = totalProductos;
 
 	const handleCheckout = async () => {
 		if (!isLoggedIn) {
@@ -64,7 +65,7 @@ export default function Carrito() {
 				total: total,
 				estado: "PREPARACION",
 				tipoEnvio: tipoEnvio,
-				formaPago: "EFECTIVO",
+				formaPago: formaPago,
 				fechaPedido: new Date().toISOString().split("T")[0],
 				domicilio: tipoEnvio === "DELIVERY" ? {
 					id: null,
@@ -178,10 +179,10 @@ export default function Carrito() {
 				</div>
 				<div className="space-y-4 py-4">
 					{cart.length === 0 ? (
-					<div className="flex justify-center items-center h-64">
-						<h2 className="text-2xl font-bold">Tu carrito está vacío.</h2>
-					</div>
-						) : (<div/>)}
+						<div className="flex justify-center items-center h-64">
+							<h2 className="text-2xl font-bold">Tu carrito está vacío.</h2>
+						</div>
+					) : (<div/>)}
 					{cart.map((item) => (
 						<div className="flex items-center justify-between" key={item.id}>
 							<div className="flex items-center space-x-2">
@@ -263,28 +264,50 @@ export default function Carrito() {
 					</div>
 				</div>
 				<div className="space-y-2 py-4 border-t border-b">
+					<div className="flex items-center space-x-2">
+						<input
+							type="radio"
+							id="efectivo"
+							name="formaPago"
+							value="EFECTIVO"
+							checked={formaPago === "EFECTIVO"}
+							onChange={(e) => setFormaPago(e.target.value)}
+						/>
+						<label htmlFor="efectivo">Efectivo</label>
+					</div>
+					<div className="flex items-center space-x-2">
+						<input
+							type="radio"
+							id="transferencia"
+							name="formaPago"
+							value="MERCADO_PAGO"
+							checked={formaPago === "MERCADO_PAGO"}
+							onChange={(e) => setFormaPago(e.target.value)}
+						/>
+						<label htmlFor="transferencia">Transferencia</label>
+					</div>
+				</div>
+				<div className="space-y-2 py-4 border-t border-b">
 					<div className="flex justify-between">
 						<p className="text-sm">Total Productos</p>
 						<p className="text-sm">${totalProductos.toFixed(2)}</p>
 					</div>
-					{tipoEnvio === "DELIVERY" && (
-						<div className="flex justify-between">
-							<p className="text-sm">Cargos por Delivery</p>
-							<p className="text-sm">${cargosPorDelivery.toFixed(2)}</p>
-						</div>
-					)}
 				</div>
 				<div className="flex justify-between items-center py-4">
 					<p className="text-xl font-bold">Total</p>
 					<p className="text-xl font-bold">${total.toFixed(2)}</p>
 				</div>
 
-				<Button
-					className="w-full bg-primary hover:bg-secondary"
-					onClick={handleCheckout}
-				>
-					Ir a Pagar <ArrowRightIcon className="ml-2" />
-				</Button>
+				{formaPago === "MERCADO_PAGO" ? (
+					<PaymentForm handleCheckout={handleCheckout} />
+				) : (
+					<Button
+						className="w-full bg-primary hover:bg-secondary"
+						onClick={handleCheckout}
+					>
+						Ir a Pagar <ArrowRightIcon className="ml-2" />
+					</Button>
+				)}
 			</div>
 		</div>
 	);
