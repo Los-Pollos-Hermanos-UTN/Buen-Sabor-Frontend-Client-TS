@@ -179,7 +179,7 @@ export default function Carrito() {
 				<div className="space-y-4 py-4">
 					{cart.length === 0 ? (
 					<div className="flex justify-center items-center h-64">
-						<h2 className="text-2xl font-bold">Tu carrito está vacío</h2>
+						<h2 className="text-2xl font-bold">Tu carrito está vacío.</h2>
 					</div>
 						) : (<div/>)}
 					{cart.map((item) => (

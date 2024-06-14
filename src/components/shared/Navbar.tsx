@@ -95,7 +95,9 @@ const Navbar = () => {
 											);
 										})
 									) : (
-										<p className="text-center">Tu carrito está vacío.</p>
+										<div className="flex justify-center items-center h-64">
+											<h2 className="text-2xl font-bold">Tu carrito está vacío.</h2>
+										</div>
 									)}
 								</ScrollArea>
 							</div>
