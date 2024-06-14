@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../context/GlobalContext";
@@ -10,6 +11,8 @@ export default function Carrito() {
 	const navigate = useNavigate();
 	const { cart, selectedSucursal } = state;
 
+	const [tipoEnvio, setTipoEnvio] = useState("DELIVERY");
+
 	const totalProductos = cart.reduce((acc, item) => {
 		if (item.promocionDetalles && item.promocionDetalles.length > 0) {
 			return acc + item.precioPromocional * item.quantity;
@@ -17,7 +20,7 @@ export default function Carrito() {
 			return acc + (item.precioPromocional || item.precioVenta) * item.quantity;
 		}
 	}, 0);
-	const cargosPorDelivery = totalProductos * 0.05;
+	const cargosPorDelivery = tipoEnvio === "DELIVERY" ? totalProductos * 0.05 : 0;
 	const total = totalProductos + cargosPorDelivery;
 
 	const handleCheckout = async () => {
@@ -41,16 +44,18 @@ export default function Carrito() {
 			}
 			const clientData = await response.json();
 
-			if (!clientData.domicilios || clientData.domicilios.length === 0) {
-				toast.error("Debe cargar un domicilio en su perfil.");
-				return;
-			}
+			if (tipoEnvio === "DELIVERY") {
+				if (!clientData.domicilios || clientData.domicilios.length === 0) {
+					toast.error("Debe cargar un domicilio en su perfil.");
+					return;
+				}
 
-			const domicilio = clientData.domicilios[0];
+				const domicilio = clientData.domicilios[0];
 
-			if (!domicilio.localidad || !domicilio.localidad.nombre) {
-				toast.error("El domicilio debe tener una localidad válida.");
-				return;
+				if (!domicilio.localidad || !domicilio.localidad.nombre) {
+					toast.error("El domicilio debe tener una localidad válida.");
+					return;
+				}
 			}
 
 			const pedido = {
@@ -58,33 +63,33 @@ export default function Carrito() {
 				eliminado: false,
 				total: total,
 				estado: "PREPARACION",
-				tipoEnvio: "DELIVERY",
+				tipoEnvio: tipoEnvio,
 				formaPago: "EFECTIVO",
 				fechaPedido: new Date().toISOString().split("T")[0],
-				domicilio: {
+				domicilio: tipoEnvio === "DELIVERY" ? {
 					id: null,
-					eliminado: domicilio.eliminado,
-					calle: domicilio.calle,
-					numero: domicilio.numero,
-					cp: domicilio.cp,
-					piso: domicilio.piso,
-					nroDepto: domicilio.nroDepto,
+					eliminado: clientData.domicilios[0].eliminado,
+					calle: clientData.domicilios[0].calle,
+					numero: clientData.domicilios[0].numero,
+					cp: clientData.domicilios[0].cp,
+					piso: clientData.domicilios[0].piso,
+					nroDepto: clientData.domicilios[0].nroDepto,
 					localidad: {
-						id: domicilio.localidad.id,
-						eliminado: domicilio.localidad.eliminado,
-						nombre: domicilio.localidad.nombre,
+						id: clientData.domicilios[0].localidad.id,
+						eliminado: clientData.domicilios[0].localidad.eliminado,
+						nombre: clientData.domicilios[0].localidad.nombre,
 						provincia: {
-							id: domicilio.localidad.provincia.id,
-							eliminado: domicilio.localidad.provincia.eliminado,
-							nombre: domicilio.localidad.provincia.nombre,
+							id: clientData.domicilios[0].localidad.provincia.id,
+							eliminado: clientData.domicilios[0].localidad.provincia.eliminado,
+							nombre: clientData.domicilios[0].localidad.provincia.nombre,
 							pais: {
-								id: domicilio.localidad.provincia.pais.id,
-								eliminado: domicilio.localidad.provincia.pais.eliminado,
-								nombre: domicilio.localidad.provincia.pais.nombre,
+								id: clientData.domicilios[0].localidad.provincia.pais.id,
+								eliminado: clientData.domicilios[0].localidad.provincia.pais.eliminado,
+								nombre: clientData.domicilios[0].localidad.provincia.pais.nombre,
 							},
 						},
 					},
-				},
+				} : null,
 				sucursal: {
 					id: selectedSucursal,
 				},
@@ -229,14 +234,40 @@ export default function Carrito() {
 					))}
 				</div>
 				<div className="space-y-2 py-4 border-t border-b">
+					<div className="flex items-center space-x-2">
+						<input
+							type="radio"
+							id="delivery"
+							name="tipoEnvio"
+							value="DELIVERY"
+							checked={tipoEnvio === "DELIVERY"}
+							onChange={(e) => setTipoEnvio(e.target.value)}
+						/>
+						<label htmlFor="delivery">Delivery</label>
+					</div>
+					<div className="flex items-center space-x-2">
+						<input
+							type="radio"
+							id="takeaway"
+							name="tipoEnvio"
+							value="TAKE_AWAY"
+							checked={tipoEnvio === "TAKE_AWAY"}
+							onChange={(e) => setTipoEnvio(e.target.value)}
+						/>
+						<label htmlFor="takeaway">Retirar</label>
+					</div>
+				</div>
+				<div className="space-y-2 py-4 border-t border-b">
 					<div className="flex justify-between">
 						<p className="text-sm">Total Productos</p>
 						<p className="text-sm">${totalProductos.toFixed(2)}</p>
 					</div>
-					<div className="flex justify-between">
-						<p className="text-sm">Cargos por Delivery</p>
-						<p className="text-sm">${cargosPorDelivery.toFixed(2)}</p>
-					</div>
+					{tipoEnvio === "DELIVERY" && (
+						<div className="flex justify-between">
+							<p className="text-sm">Cargos por Delivery</p>
+							<p className="text-sm">${cargosPorDelivery.toFixed(2)}</p>
+						</div>
+					)}
 				</div>
 				<div className="flex justify-between items-center py-4">
 					<p className="text-xl font-bold">Total</p>

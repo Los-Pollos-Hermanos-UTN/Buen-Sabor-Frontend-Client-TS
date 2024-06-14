@@ -458,7 +458,11 @@ export default function User() {
                                             <div className="flex items-center justify-between"
                                                  key={detalle.id}>
                                                 <p>{detalle.cantidad}x {detalle.articulo.denominacion}</p>
-                                                <p>${detalle.subTotal.toFixed(2)}</p>
+                                                <p>
+                                                    {detalle.subTotal === 0
+                                                        ? '(Parte de una promoción)'
+                                                        : `$${detalle.subTotal.toFixed(2)}`}
+                                                </p>
                                             </div>))}
                                     </div>
                                 </CardContent>
