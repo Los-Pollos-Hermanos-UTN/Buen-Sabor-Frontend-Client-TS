@@ -29,7 +29,7 @@ const App: React.FC = () => {
 			<AuthProvider>
 				<GlobalProvider>
 					<Navbar />
-					<ToastContainer />
+					<ToastContainer position={"top-left"}/>
 					<Routes>
 						<Route path="/" element={<Hero />} />
 						<Route path="/carrito" element={<Carrito />} />

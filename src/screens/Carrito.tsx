@@ -41,6 +41,18 @@ export default function Carrito() {
 			}
 			const clientData = await response.json();
 
+			if (!clientData.domicilios || clientData.domicilios.length === 0) {
+				toast.error("Debe cargar un domicilio en su perfil.");
+				return;
+			}
+
+			const domicilio = clientData.domicilios[0];
+
+			if (!domicilio.localidad || !domicilio.localidad.nombre) {
+				toast.error("El domicilio debe tener una localidad válida.");
+				return;
+			}
+
 			const pedido = {
 				id: null,
 				eliminado: false,
@@ -50,25 +62,25 @@ export default function Carrito() {
 				formaPago: "EFECTIVO",
 				fechaPedido: new Date().toISOString().split("T")[0],
 				domicilio: {
-					id: null,
-					eliminado: false,
-					calle: "lol",
-					numero: 123,
-					cp: 5501,
-					piso: 1,
-					nroDepto: 3,
+					id: domicilio.id,
+					eliminado: domicilio.eliminado,
+					calle: domicilio.calle,
+					numero: domicilio.numero,
+					cp: domicilio.cp,
+					piso: domicilio.piso,
+					nroDepto: domicilio.nroDepto,
 					localidad: {
-						id: 1,
-						eliminado: false,
-						nombre: "Saavedra",
+						id: domicilio.localidad.id,
+						eliminado: domicilio.localidad.eliminado,
+						nombre: domicilio.localidad.nombre,
 						provincia: {
-							id: 1,
-							eliminado: false,
-							nombre: "Ciudad Autónoma de Buenos Aires",
+							id: domicilio.localidad.provincia.id,
+							eliminado: domicilio.localidad.provincia.eliminado,
+							nombre: domicilio.localidad.provincia.nombre,
 							pais: {
-								id: 1,
-								eliminado: false,
-								nombre: "Argentina",
+								id: domicilio.localidad.provincia.pais.id,
+								eliminado: domicilio.localidad.provincia.pais.eliminado,
+								nombre: domicilio.localidad.provincia.pais.nombre,
 							},
 						},
 					},
@@ -142,7 +154,7 @@ export default function Carrito() {
 				toast.success("Pedido enviado con éxito");
 				dispatch({ type: "CLEAR_CART" }); // Clear the cart after sending the order
 			} else if (saveData.estado === "RECHAZADO") {
-				toast.error("El pedido fue rechazado");
+				toast.error("El pedido fue rechazado por falta de stock");
 			} else {
 				toast.error("Error al realizar el pedido");
 			}
