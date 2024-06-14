@@ -136,7 +136,7 @@ const Login = forwardRef<HTMLDivElement>((props, popoverRef) => {
 
             if (!response.ok) {
                 const errorMessage = await response.text();
-                toast.error(errorMessage || "Email o contraseña incorrectos");
+                toast.error("Email o contraseña incorrectos");
                 return;
             }
 

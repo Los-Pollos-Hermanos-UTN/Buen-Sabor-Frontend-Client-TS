@@ -62,7 +62,7 @@ export default function Carrito() {
 				formaPago: "EFECTIVO",
 				fechaPedido: new Date().toISOString().split("T")[0],
 				domicilio: {
-					id: domicilio.id,
+					id: null,
 					eliminado: domicilio.eliminado,
 					calle: domicilio.calle,
 					numero: domicilio.numero,
