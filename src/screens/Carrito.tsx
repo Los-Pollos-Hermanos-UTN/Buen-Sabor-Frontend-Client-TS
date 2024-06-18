@@ -45,18 +45,22 @@ export default function Carrito() {
 			}
 			const clientData = await response.json();
 
+			let domicilio = null;
+
 			if (tipoEnvio === "DELIVERY") {
 				if (!clientData.domicilios || clientData.domicilios.length === 0) {
 					toast.error("Debe cargar un domicilio en su perfil.");
 					return;
 				}
-
-				const domicilio = clientData.domicilios[0];
+				domicilio = clientData.domicilios[0];
 
 				if (!domicilio.localidad || !domicilio.localidad.nombre) {
 					toast.error("El domicilio debe tener una localidad válida.");
 					return;
 				}
+			} else {
+				console.log(selectedSucursal)
+				domicilio = selectedSucursal.domicilio;
 			}
 
 			const pedido = {
@@ -67,32 +71,31 @@ export default function Carrito() {
 				tipoEnvio: tipoEnvio,
 				formaPago: formaPago,
 				fechaPedido: new Date().toISOString().split("T")[0],
-				domicilio: tipoEnvio === "DELIVERY" ? {
+				domicilio: {
 					id: null,
-					eliminado: clientData.domicilios[0].eliminado,
-					calle: clientData.domicilios[0].calle,
-					numero: clientData.domicilios[0].numero,
-					cp: clientData.domicilios[0].cp,
-					piso: clientData.domicilios[0].piso,
-					nroDepto: clientData.domicilios[0].nroDepto,
+					calle: domicilio.calle,
+					numero: domicilio.numero,
+					cp: domicilio.cp,
+					piso: domicilio.piso,
+					nroDepto: domicilio.nroDepto,
 					localidad: {
-						id: clientData.domicilios[0].localidad.id,
-						eliminado: clientData.domicilios[0].localidad.eliminado,
-						nombre: clientData.domicilios[0].localidad.nombre,
+						id: domicilio.localidad.id,
+						eliminado: domicilio.localidad.eliminado,
+						nombre: domicilio.localidad.nombre,
 						provincia: {
-							id: clientData.domicilios[0].localidad.provincia.id,
-							eliminado: clientData.domicilios[0].localidad.provincia.eliminado,
-							nombre: clientData.domicilios[0].localidad.provincia.nombre,
+							id: domicilio.localidad.provincia.id,
+							eliminado: domicilio.localidad.provincia.eliminado,
+							nombre: domicilio.localidad.provincia.nombre,
 							pais: {
-								id: clientData.domicilios[0].localidad.provincia.pais.id,
-								eliminado: clientData.domicilios[0].localidad.provincia.pais.eliminado,
-								nombre: clientData.domicilios[0].localidad.provincia.pais.nombre,
+								id: domicilio.localidad.provincia.pais.id,
+								eliminado: domicilio.localidad.provincia.pais.eliminado,
+								nombre: domicilio.localidad.provincia.pais.nombre,
 							},
 						},
 					},
-				} : null,
+				},
 				sucursal: {
-					id: selectedSucursal,
+					id: selectedSucursal.id,
 				},
 				factura: null,
 				cliente: {
@@ -109,8 +112,8 @@ export default function Carrito() {
 						return item.promocionDetalles.map((detalle) => ({
 							id: null,
 							eliminado: false,
-							cantidad: detalle.cantidad * item.quantity, // Multiplicar por la cantidad de promociones
-							subTotal: 0, // El precio total de la promoción ya se incluye en el pedido
+							cantidad: detalle.cantidad * item.quantity,
+							subTotal: 0,
 							articulo: {
 								id: detalle.articulo.id,
 								eliminado: detalle.articulo.eliminado,
@@ -154,7 +157,7 @@ export default function Carrito() {
 				body: JSON.stringify(pedido),
 			});
 
-			const saveData = await saveResponse.json(); // Obteniendo el JSON de la respuesta
+			const saveData = await saveResponse.json();
 
 			if (saveData.estado === "PENDIENTE") {
 				toast.success("Pedido enviado con éxito");
@@ -169,6 +172,7 @@ export default function Carrito() {
 			console.error("Error:", error);
 		}
 	};
+
 
 	return (
 		<div className="flex justify-center items-center h-auto p-6">

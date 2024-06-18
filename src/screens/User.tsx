@@ -502,6 +502,10 @@ export default function User() {
                                         <p className="text-gray-500 dark:text-gray-400 text-sm">Total:
                                             ${order.total}</p>
                                     </div>
+                                    {order.estado === "PENDIENTE"
+                                        ? <Button variant="outline" className="mr-5" onClick={() => handleSaveAsPDF(order.id)}>
+                                            Cancelar
+                                        </Button>:<div></div>}
                                     <Button variant="outline" onClick={() => handleSaveAsPDF(order.id)}>
                                         Descargar Factura
                                     </Button>

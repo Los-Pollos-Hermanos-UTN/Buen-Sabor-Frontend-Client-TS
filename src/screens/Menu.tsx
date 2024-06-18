@@ -32,8 +32,8 @@ const Menu: React.FC = () => {
 	useEffect(() => {
 		if (selectedSucursal) {
 			setIsLoading(true);
-			fetchCategorias(selectedSucursal);
-			fetchPromociones(selectedSucursal);
+			fetchCategorias(selectedSucursal.id);
+			fetchPromociones(selectedSucursal.id);
 		}
 	}, [selectedSucursal]);
 
@@ -96,8 +96,8 @@ const Menu: React.FC = () => {
 		});
 	};
 
-	const handleSucursalChange = (sucursalId: number) => {
-		dispatch({ type: "SET_SELECTED_SUCURSAL", payload: sucursalId });
+	const handleSucursalChange = (sucursal) => {
+		dispatch({ type: "SET_SELECTED_SUCURSAL", payload: sucursal });
 		setSelectedCategory(null);
 		setIsPromociones(false);
 	};
@@ -189,17 +189,12 @@ const Menu: React.FC = () => {
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="start" className="w-full md:w-auto max-h-64 overflow-y-auto">
 							{sucursales.map((sucursal) => (
-								<DropdownMenuItem
-									key={sucursal.id}
-									className={`flex items-center space-x-1 w-full md:w-auto ${
-										selectedSucursal === sucursal.id ? "bg-gray-200" : ""
-									}`}
-									onClick={() => handleSucursalChange(sucursal.id)}
-								>
-									<span>{sucursal.nombre}</span>
+								<DropdownMenuItem key={sucursal.id} onSelect={() => handleSucursalChange(sucursal)}>
+									{sucursal.nombre}
 								</DropdownMenuItem>
 							))}
 						</DropdownMenuContent>
+
 					</DropdownMenu>
 
 					<div
