@@ -240,6 +240,29 @@ export default function User() {
     }
     }
 
+
+    const handleCancelar = async (pedidoId: number) => {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/pedido/cancelar/${pedidoId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/pdf",
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                toast.error("No se pudo cancelar el pedido");
+            }
+
+        } catch (error) {
+            console.error("Error cancelando el pedido:", error);
+        }
+    }
+
+
     const handleSaveChanges = async () => {
         if (!validateFields()) {
             return;
@@ -503,7 +526,7 @@ export default function User() {
                                             ${order.total}</p>
                                     </div>
                                     {order.estado === "PENDIENTE"
-                                        ? <Button variant="outline" className="mr-5" onClick={() => handleSaveAsPDF(order.id)}>
+                                        ? <Button variant="outline" className="mr-5" onClick={() => handleCancelar(order.id)}>
                                             Cancelar
                                         </Button>:<div></div>}
                                     <Button variant="outline" onClick={() => handleSaveAsPDF(order.id)}>
