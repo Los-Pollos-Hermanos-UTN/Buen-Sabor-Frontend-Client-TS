@@ -243,7 +243,8 @@ export default function Carrito() {
 						</div>
 					))}
 				</div>
-				<div className="space-y-2 py-4 border-t border-b">
+				<div className="grid grid-cols-2 gap-4 border-t border-b">
+				<div className="space-y-2 py-4">
 					<div className="flex items-center space-x-2">
 						<input
 							type="radio"
@@ -267,7 +268,7 @@ export default function Carrito() {
 						<label htmlFor="takeaway">Retirar</label>
 					</div>
 				</div>
-				<div className="space-y-2 py-4 border-t border-b">
+				<div className="space-y-2 py-4">
 					<div className="flex items-center space-x-2">
 						<input
 							type="radio"
@@ -291,12 +292,7 @@ export default function Carrito() {
 						<label htmlFor="transferencia">Transferencia</label>
 					</div>
 				</div>
-				<div className="space-y-2 py-4 border-t border-b">
-					<div className="flex justify-between">
-						<p className="text-sm">Total Productos</p>
-						<p className="text-sm">${totalProductos.toFixed(2)}</p>
 					</div>
-				</div>
 				<div className="flex justify-between items-center py-4">
 					<p className="text-xl font-bold">Total</p>
 					<p className="text-xl font-bold">${total.toFixed(2)}</p>

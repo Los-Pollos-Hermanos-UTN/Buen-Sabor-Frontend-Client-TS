@@ -255,6 +255,8 @@ export default function User() {
 
             if (!response.ok) {
                 toast.error("No se pudo cancelar el pedido");
+            } else {
+                toast.success("Pedido cancelado");
             }
 
         } catch (error) {
