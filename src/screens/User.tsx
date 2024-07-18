@@ -562,13 +562,17 @@ export default function User() {
                                             <div className="flex items-center justify-between"
                                                  key={detalle.id}>
                                                 <p>{detalle.cantidad}x {detalle.articulo.denominacion}</p>
-                                                <p>${detalle.subTotal.toFixed(2)}</p>
+                                                <p>
+                                                    {detalle.subTotal === 0
+                                                        ? '(Parte de una promoción)'
+                                                        : `$${detalle.subTotal.toFixed(2)}`}
+                                                </p>
                                             </div>))}
                                     </div>
                                 </CardContent>
                                 <CardFooter>
                                     <div className="flex items-center justify-between w-full">
-                                        <p className="text-gray-500 dark:text-gray-400 text-sm">Total:
+                                    <p className="text-gray-500 dark:text-gray-400 text-sm">Total:
                                             ${order.total}</p>
                                     </div>
                                     <Button variant="outline" onClick={() => handleSaveAsPDF(order.id)}>
